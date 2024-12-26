@@ -41,14 +41,6 @@ fn is_proxy(config: &Config, path: String) -> Option<String> {
     None
 }
 
-fn serve_proxy(proxy_url: String) -> HttpResponse {
-    let raw_response = fetch(&proxy_url);
-    match raw_response {
-        Ok(raw) => HttpResponse::new_raw(raw),
-        Err(_) => HttpResponse::new(HttpStatus::NotFound, "not found", None),
-    }
-}
-
 fn get_mime_tipe(path: &String) -> String {
     let extension = Path::new(path.as_str())
         .extension()
