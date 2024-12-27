@@ -41,6 +41,14 @@ fn is_proxy(config: &Config, path: String) -> Option<String> {
     None
 }
 
+fn serve_proxy(proxy_url: String) -> HttpResponse {
+    let raw_response = fetch(&proxy_url);
+    match raw_response {
+        Ok(raw) => HttpResponse::new_raw(raw),
+        Err(_) => HttpResponse::new(HttpStatus::NotFound, "not found", None),
+    }
+}
+
 fn get_mime_tipe(path: &String) -> String {
     let extension = Path::new(path.as_str())
         .extension()
@@ -76,7 +84,6 @@ fn serve_cgi(
     request: HttpRequest,
 ) -> Result<Vec<u8>, &'static str> {
     use std::{env, io::Write, process::Stdio};
-
     let query = request
         .args
         .iter()
@@ -235,7 +242,7 @@ fn main() {
                 let cgi_result = serve_cgi(cgi_command, &full_path, req);
                 return match cgi_result {
                     Ok(result) => HttpResponse::new(HttpStatus::OK, result, None),
-                    Err(_) => HttpResponse::new(
+                    Err(err) => HttpResponse::new(
                         HttpStatus::InternalServerError,
                         "Internal server error",
                         None,
